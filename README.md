@@ -9,6 +9,9 @@ Microservices With Dapr Flow Diagram:
 2. Order API creates and stores the order in SQL Server DB
 3. Notification Service sends email to customer regarding order updates
 
+# Dapr Building Blocks Used
+1. Service Invocation
+2. Pub Sub
 
 # Dapr
 1. Faces Web MVC sends request to Envoy API Gateway to create an Order
@@ -22,11 +25,16 @@ Microservices With Dapr Flow Diagram:
 
 
 # Run the application
-Use Visual Studio to get the best **_F5_** debugging experience. To start, open the FacesAPI.sln solution file in Visual Studio. The solution contains a **_Docker Compose_** project. Make sure it's set as the **default startup project**. Right-click on the docker-compose node in the Project Explorer, and select the Set as StartUp Project menu option. Now you can build and run the application by pressing **_Ctrl+F5 or start debugging by pressing F5_**.
+1. Use Visual Studio to get the best **_F5_** debugging experience.
+2. To start, open the FacesAPI.sln solution file in Visual Studio.
+3. The solution contains a **_Docker Compose_** project. Make sure it's set as the **default startup project**. Right-click on the docker-compose node in the Project Explorer, and select the Set as StartUp Project menu option.
+4. Now you can build and run the application by pressing **_Ctrl+F5 or start debugging by pressing F5_**.
 
 
 # Run the application from CLI
-The root folder of the repository contains Docker Compose files to run the solution locally. The **_docker-compose.yml_** file contains the definition of all the images needed to run Faces API. The **_docker-compose.override.yml_** file contains the base configuration for all images of the previous file.
+1. The root folder of the repository contains Docker Compose files to run the solution locally.
+2. The **_docker-compose.yml_** file contains the definition of all the images needed to run Faces API.
+3. The **_docker-compose.override.yml_** file contains the base configuration for all images of the previous file.
 
 To start **_FacesAPI_** from the CLI, run the following command from the root folder:
 ```
