@@ -99,6 +99,7 @@ namespace OrdersAPI
                 endpoints.MapControllers();
             });
 
+            //Migrate DB
             using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
             scope.ServiceProvider.GetService<OrdersContext>().MigrateDB();
         }
