@@ -53,7 +53,7 @@ In self-hosted mode everything will run on your local machine. To prevent port-c
 | Sql Server    | 1445          |
 | Rabbit MQ     | 5672          |
 
-Before running the following commands, make sure to run Sql Server and RabbitMQ in Docker:
+Before running the dapr commands, make sure to run Sql Server and RabbitMQ in Docker:
 
 Run Sql Server - 
 ```
