@@ -1,0 +1,114 @@
+version: "3.4"
+
+services:
+  facesapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "6000:80"
+      - "50001:50001"
+
+  facesapi-dapr:
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "facesapi",
+        "-app-port",
+        "80",
+        "-components-path",
+        "/components",
+      ]
+    volumes:
+      - "./dapr/Components/:/components"
+
+  ordersapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - OrdersContext=Server=sqlService;Database=OrdersDb;User Id=sa;Password=Passw0rd(!)
+      - FacesAPIUrl=http://facesapi
+    ports:
+      - "5000:80"
+      - "50002:50001"
+
+  ordersapi-dapr:
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "ordersapi",
+        "-app-port",
+        "80",
+        "-components-path",
+        "/components",
+      ]
+    volumes:
+      - "./dapr/Components/:/components"
+
+  faces.webmvc:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - OrdersAPIUrl=http://facesapigw
+    ports:
+      - "7000:80"
+
+  # faces.webmvc-dapr:
+  #  command:
+  #    [
+  #      "./daprd",
+  #      "-app-id",
+  #      "faces.webmvc",
+  #      "-app-port",
+  #      "80",
+  #      "-components-path",
+  #      "/components",
+  #    ]
+  #  volumes:
+  #    - "./dapr/Components/:/components"
+
+  notificationservice:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
+  notificationservice-dapr:
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "notificationservice",
+        "-app-port",
+        "80",
+        "-components-path",
+        "/components",
+      ]
+    volumes:
+      - "./dapr/Components/:/components"
+
+  sqlService:
+    environment:
+      - SA_PASSWORD=Passw0rd(!)
+      - ACCEPT_EULA=Y
+    ports:
+      - "1445:1433"
+
+  facesapigw:
+    volumes:
+      - ./APIGateways/Envoy:/etc/envoy
+    ports:
+      - "5202:80"
+      - "15202:8001"
+      - "50003:50001"
+
+  facesapigw-dapr:
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "webshoppingapigw",
+        "-app-port",
+        "80",
+        "-components-path",
+        "/components",
+      ]
+    volumes:
+      - "./dapr/Components/:/components"
