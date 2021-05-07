@@ -61,7 +61,8 @@ namespace NotificationService
             {
                 Console.WriteLine("Enter HandleOrderProcessedEvent");
                 var client = context.RequestServices.GetRequiredService<DaprClient>();
-                var rootFolder = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin"));
+                var rootFolder = AppContext.BaseDirectory;
+                Console.WriteLine("Root Directory is - " + rootFolder);
                 var result = await JsonSerializer.DeserializeAsync<OrderProcessedIntegrationEvent>(context.Request.Body, serializerOptions);
                 var facesData = result.Faces;
                 if (facesData.Count < 1)
