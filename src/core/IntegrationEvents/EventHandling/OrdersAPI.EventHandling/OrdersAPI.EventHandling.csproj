@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapr.Client" Version="1.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\infrastructure\database\Ordering\OrdersAPI.Database\OrdersAPI.Database.csproj" />
+    <ProjectReference Include="..\..\..\..\infrastructure\middleware\dapr\EventBus\EventBus.csproj" />
+    <ProjectReference Include="..\..\Events\Events.csproj" />
+  </ItemGroup>
+
+</Project>
