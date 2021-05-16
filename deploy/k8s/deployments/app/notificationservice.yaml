@@ -1,11 +1,11 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: notificationservice-cm
-  namespace: default
+  name: notificationapi-cm
+  namespace: faces
   labels:
-    app: faces
-    service: notificationservice
+    app: facesapp
+    service: notificationapi
 data:
   ASPNETCORE_ENVIRONMENT: Development
 
@@ -14,29 +14,29 @@ data:
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: notificationservice
-  namespace: default
+  name: notificationapi
+  namespace: faces
   labels:
-    app: faces
-    service: notificationservice
+    app: facesapp
+    service: notificationapi
 spec:
   replicas: 1
   selector:
     matchLabels:
-      service: notificationservice
+      service: notificationapi
   template:
     metadata:
       labels:
-        app: faces
-        service: notificationservice
+        app: facesapp
+        service: notificationapi
       annotations:
         dapr.io/enabled: "true"
-        dapr.io/app-id: "notificationservice"
+        dapr.io/app-id: "notificationapi"
         dapr.io/app-port: "80"
     spec:
       containers:
-        - name: notificationservice
-          image: notificationservice:latest
+        - name: notificationapi
+          image: notificationapi:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -44,18 +44,18 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: notificationservice-cm
+                name: notificationapi-cm
 
 ---
 
 kind: Service
 apiVersion: v1
 metadata:
-  name: notificationservice-service
-  namespace: default
+  name: notificationapi-service
+  namespace: faces
   labels:
-    app: faces
-    service: notificationservice
+    app: facesapp
+    service: notificationapi
 spec:
   type: NodePort
   ports:
@@ -65,4 +65,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    service: notificationservice
+    service: notificationapi

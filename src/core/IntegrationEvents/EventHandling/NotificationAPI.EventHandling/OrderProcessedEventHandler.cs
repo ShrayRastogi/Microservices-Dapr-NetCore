@@ -1,6 +1,9 @@
-﻿using Dapr.Client;
+﻿using Dapr.Actors;
+using Dapr.Actors.Client;
+using Dapr.Client;
 using EventBus.Abstractions;
 using Events;
+using NotificationAPI.StateStore;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
@@ -21,7 +24,13 @@ namespace NotificationAPI.EventHandling
             _eventBus = eventBus;
         }
         public async Task Handle(OrderProcessedIntegrationEvent result)
-        { 
+        {
+            var orderStatus = await GetOrderingProcessActorAsync(result.OrderId).GetOrderStatus();
+            if (orderStatus != null && orderStatus.Status != "Processed")
+            {
+                throw new Exception("Could not process order due to invalid status - " + orderStatus.Status);
+            }
+
             var facesData = result.Faces;
             var rootFolder = AppContext.BaseDirectory;
             Console.WriteLine("Root Directory is - " + rootFolder);
@@ -47,6 +56,12 @@ namespace NotificationAPI.EventHandling
                 OrderId = result.OrderId
             };
             await _eventBus.PublishAsync<OrderDispatchedIntegrationEvent>(dispatchedOrder);
+        }        
+
+        private static INotificationProcessActor GetOrderingProcessActorAsync(Guid orderId)
+        {
+            var actorId = new ActorId(orderId.ToString());
+            return ActorProxy.Create<INotificationProcessActor>(actorId, nameof(NotificationProcessActor));
         }
     }
 }

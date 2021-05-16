@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using EventBus;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -17,6 +19,7 @@ using Microsoft.OpenApi.Models;
 using OrdersAPI.Database;
 using OrdersAPI.Database.Repositories;
 using OrdersAPI.EventHandling;
+using OrdersAPI.StateStore;
 
 namespace OrdersAPI
 {
@@ -49,6 +52,10 @@ namespace OrdersAPI
             services.AddTransient<OrderDispatchedEventHandler>();
             services.AddTransient<IOrderRepository, OrderRepository>();
             services.AddControllers().AddDapr();
+            services.AddActors(options =>
+            {
+                options.Actors.RegisterActor<OrderingProcessActor>();
+            });
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "OrdersAPI", Version = "v1" });
@@ -74,12 +81,30 @@ namespace OrdersAPI
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapSubscribeHandler();
+                endpoints.MapActorsHandlers();
                 endpoints.MapControllers();
             });
+        }
 
-            //Migrate DB
-            using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
-            scope.ServiceProvider.GetService<OrdersContext>().MigrateDB();
+        // If database context is in another library project, then need to implement IDesignTimeDbContextFactory
+        // so that .Net Core looks for it and ignores default initialization of db context.
+        public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<OrdersContext>
+        {
+            public OrdersContext CreateDbContext(string[] args)
+            {
+                var configuration = new ConfigurationBuilder()
+                        .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("appsettings.json")
+                        .Build();
+
+                var optionsBuilder = new DbContextOptionsBuilder<OrdersContext>();
+
+                var connectionString = configuration["OrdersContext"];
+
+                optionsBuilder.UseSqlServer(connectionString);
+
+                return new OrdersContext(optionsBuilder.Options);
+            }
         }
     }
 }

@@ -2,9 +2,9 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: sqldata
-  namespace: default
+  namespace: faces
   labels:
-    app: faces
+    app: facesapp
     service: sqldata
 spec:
   replicas: 1
@@ -14,7 +14,7 @@ spec:
   template:
     metadata:
       labels:
-        app: faces
+        app: facesapp
         service: sqldata
     spec:
       containers:
@@ -37,9 +37,9 @@ kind: Service
 apiVersion: v1
 metadata:
   name: sqldata
-  namespace: default
+  namespace: faces
   labels:
-    app: faces
+    app: facesapp
     service: sqldata
 spec:
   type: NodePort

@@ -1,0 +1,84 @@
+version: "3.4"
+
+services:
+  facesapi:
+    image: facesapi
+    build:
+      context: .
+      dockerfile: src/api/Faces/FacesAPI/Dockerfile
+
+  facesapi-dapr:
+    image: "daprio/daprd:1.0.0"
+    network_mode: "service:facesapi"
+    depends_on:
+      - facesapi
+
+  ordersapi:
+    image: ordersapi
+    build:
+      context: .
+      dockerfile: src/api/Ordering/OrdersAPI/Dockerfile
+    depends_on:
+      - sqlService
+      - rabbitmq
+      - facesapi
+
+  ordersapi-dapr:
+    image: "daprio/daprd:1.0.0"
+    network_mode: "service:ordersapi"
+    depends_on:
+      - ordersapi
+
+  faceswebapp:
+    image: faceswebapp
+    build:
+      context: .
+      dockerfile: src/app/FacesWebApp/Dockerfile
+    depends_on:
+      - rabbitmq
+      - ordersapi
+
+  notificationapi:
+    image: notificationapi
+    build:
+      context: .
+      dockerfile: src/api/Notifications/NotificationAPI/Dockerfile
+    depends_on:
+      - rabbitmq
+
+  notificationapi-dapr:
+    image: "daprio/daprd:1.0.0"
+    network_mode: "service:notificationapi"
+    depends_on:
+      - notificationapi
+
+  facesapigw:
+    image: envoyproxy/envoy:v1.14.2
+
+  facesapigw-dapr:
+    image: "daprio/daprd:1.0.0"
+    network_mode: "service:facesapigw"
+    depends_on:
+      - facesapigw
+
+  sqlService:
+    image: mcr.microsoft.com/mssql/server:latest
+    container_name: sqlserver
+    environment:
+      SA_PASSWORD: "Passw0rd(!)"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1445:1433"
+
+  redis:
+    image: redis:alpine
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmqFace
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+  dapr-placement:
+    image: "daprio/dapr:1.0.0"

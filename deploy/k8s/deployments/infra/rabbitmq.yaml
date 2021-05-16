@@ -2,9 +2,9 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: rabbitmq
-  namespace: default
+  namespace: faces
   labels:
-    app: faces
+    app: facesapp
     service: rabbitmq
 spec:
   replicas: 1
@@ -14,7 +14,7 @@ spec:
   template:
     metadata:
       labels:
-        app: faces
+        app: facesapp
         service: rabbitmq
     spec:
       containers:
@@ -35,9 +35,9 @@ kind: Service
 apiVersion: v1
 metadata:
   name: rabbitmq
-  namespace: default
+  namespace: faces
   labels:
-    app: faces
+    app: facesapp
     service: rabbitmq
 spec:
   type: NodePort
