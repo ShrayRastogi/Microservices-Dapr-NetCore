@@ -1,4 +1,4 @@
-# Microservices-POC
+# Microservices-Dapr-NetCore
 
 This repo showcases microservices development using .Net Core and Dapr
 
