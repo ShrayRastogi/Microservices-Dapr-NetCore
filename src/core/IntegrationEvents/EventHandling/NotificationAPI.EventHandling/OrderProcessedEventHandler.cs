@@ -3,8 +3,8 @@ using Dapr.Actors.Client;
 using Dapr.Client;
 using EventBus.Abstractions;
 using Events;
-using NotificationAPI.StateStore;
 using SixLabors.ImageSharp;
+using StateStore;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,7 +25,7 @@ namespace NotificationAPI.EventHandling
         }
         public async Task Handle(OrderProcessedIntegrationEvent result)
         {
-            var orderStatus = await GetOrderingProcessActorAsync(result.OrderId).GetOrderStatus();
+            var orderStatus = await GetCommonActorAsync(result.OrderId).GetOrderStatus();
             if (orderStatus != null && orderStatus.Status != "Processed")
             {
                 throw new Exception("Could not process order due to invalid status - " + orderStatus.Status);
@@ -58,10 +58,10 @@ namespace NotificationAPI.EventHandling
             await _eventBus.PublishAsync<OrderDispatchedIntegrationEvent>(dispatchedOrder);
         }        
 
-        private static INotificationProcessActor GetOrderingProcessActorAsync(Guid orderId)
+        private static ICommonActor GetCommonActorAsync(Guid orderId)
         {
             var actorId = new ActorId(orderId.ToString());
-            return ActorProxy.Create<INotificationProcessActor>(actorId, nameof(NotificationProcessActor));
+            return ActorProxy.Create<ICommonActor>(actorId, nameof(CommonActor));
         }
     }
 }

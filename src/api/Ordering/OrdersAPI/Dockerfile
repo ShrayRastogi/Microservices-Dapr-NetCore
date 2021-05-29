@@ -9,8 +9,8 @@ WORKDIR /src
 COPY ["src/api/Ordering/OrdersAPI/OrdersAPI.csproj", "src/api/Ordering/OrdersAPI/"]
 COPY ["src/core/IntegrationEvents/EventHandling/OrdersAPI.EventHandling/OrdersAPI.EventHandling.csproj", "src/core/IntegrationEvents/EventHandling/OrdersAPI.EventHandling/"]
 COPY ["src/infrastructure/middleware/dapr/EventBus/EventBus.csproj", "src/infrastructure/middleware/dapr/EventBus/"]
-COPY ["src/infrastructure/middleware/dapr/StateStore/OrdersAPI.StateStore/OrdersAPI.StateStore.csproj", "src/infrastructure/middleware/dapr/StateStore/OrdersAPI.StateStore/"]
 COPY ["src/infrastructure/database/Ordering/OrdersAPI.Database/OrdersAPI.Database.csproj", "src/infrastructure/database/Ordering/OrdersAPI.Database/"]
+COPY ["src/infrastructure/middleware/dapr/StateStore/StateStore.csproj", "src/infrastructure/middleware/dapr/StateStore/"]
 COPY ["src/core/IntegrationEvents/Events/Events.csproj", "src/core/IntegrationEvents/Events/"]
 RUN dotnet restore "src/api/Ordering/OrdersAPI/OrdersAPI.csproj"
 COPY . .

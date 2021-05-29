@@ -19,7 +19,7 @@ using Microsoft.OpenApi.Models;
 using OrdersAPI.Database;
 using OrdersAPI.Database.Repositories;
 using OrdersAPI.EventHandling;
-using OrdersAPI.StateStore;
+using StateStore;
 
 namespace OrdersAPI
 {
@@ -54,7 +54,7 @@ namespace OrdersAPI
             services.AddControllers().AddDapr();
             services.AddActors(options =>
             {
-                options.Actors.RegisterActor<OrderingProcessActor>();
+                options.Actors.RegisterActor<CommonActor>();
             });
             services.AddSwaggerGen(c =>
             {

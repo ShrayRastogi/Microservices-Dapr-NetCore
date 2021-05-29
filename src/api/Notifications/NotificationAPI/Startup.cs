@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NotificationAPI.EventHandling;
-using NotificationAPI.StateStore;
+using StateStore;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -43,7 +43,7 @@ namespace NotificationAPI
             services.AddTransient<OrderProcessedEventHandler>();
             services.AddActors(options =>
             {
-                options.Actors.RegisterActor<NotificationProcessActor>();
+                options.Actors.RegisterActor<CommonActor>();
             });
             services.AddSingleton(new JsonSerializerOptions()
             {

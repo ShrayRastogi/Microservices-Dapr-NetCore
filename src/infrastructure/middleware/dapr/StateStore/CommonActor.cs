@@ -1,17 +1,13 @@
 ﻿using Dapr.Actors.Runtime;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace NotificationAPI.StateStore
+namespace StateStore
 {
-    public class NotificationProcessActor : Actor, INotificationProcessActor
+    public class CommonActor: Actor, ICommonActor
     {
         private const string OrderStatusStateName = "OrderStatus";
-
-        public NotificationProcessActor(ActorHost host)
+        public CommonActor(ActorHost host)
             : base(host)
         {
         }

@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrdersAPI.StateStore
+namespace StateStore
 {
-    public interface IOrderingProcessActor: IActor
+    public interface ICommonActor: IActor
     {
         Task UpdateOrderStatus(OrderStatus orderStatus);
         Task<OrderStatus> GetOrderStatus();

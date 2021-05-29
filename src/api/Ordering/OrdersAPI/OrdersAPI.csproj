@@ -24,7 +24,6 @@
 		<ProjectReference Include="..\..\..\core\IntegrationEvents\Events\Events.csproj" />
 		<ProjectReference Include="..\..\..\infrastructure\database\Ordering\OrdersAPI.Database\OrdersAPI.Database.csproj" />
 		<ProjectReference Include="..\..\..\infrastructure\middleware\dapr\EventBus\EventBus.csproj" />
-		<ProjectReference Include="..\..\..\infrastructure\middleware\dapr\StateStore\OrdersAPI.StateStore\OrdersAPI.StateStore.csproj" />
 	</ItemGroup>
 
 </Project>

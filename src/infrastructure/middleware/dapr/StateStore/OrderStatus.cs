@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OrdersAPI.StateStore
+namespace StateStore
 {
     public class OrderStatus
     {

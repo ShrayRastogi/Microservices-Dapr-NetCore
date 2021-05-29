@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OrdersAPI.Database.Models;
 using OrdersAPI.Database.Repositories;
-using OrdersAPI.StateStore;
+using StateStore;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -98,20 +98,20 @@ namespace OrdersAPI.EventHandling
 
         private static async void UpdateOrderStatusAsync(Guid orderId, Status status)
         {
-            var orderingProcessActor = GetOrderingProcessActorAsync(orderId);
+            var commonActor = GetCommonActorAsync(orderId);
 
             var orderStatus = new OrderStatus
             {
                 OrderId = orderId,
                 Status = status.ToString()
             };
-            await orderingProcessActor.UpdateOrderStatus(orderStatus);
+            await commonActor.UpdateOrderStatus(orderStatus);
         }
 
-        private static IOrderingProcessActor GetOrderingProcessActorAsync(Guid orderId)
+        private static ICommonActor GetCommonActorAsync(Guid orderId)
         {
             var actorId = new ActorId(orderId.ToString());
-            return ActorProxy.Create<IOrderingProcessActor>(actorId, nameof(OrderingProcessActor));
+            return ActorProxy.Create<ICommonActor>(actorId, nameof(CommonActor));
         }
     }
 }
