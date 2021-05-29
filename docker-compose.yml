@@ -2,10 +2,10 @@ version: "3.4"
 
 services:
   facesapi:
-    image: ${DOCKER_REGISTRY-}facesapi
+    image: facesapi
     build:
       context: .
-      dockerfile: FacesAPI/Dockerfile
+      dockerfile: src/api/Faces/FacesAPI/Dockerfile
 
   facesapi-dapr:
     image: "daprio/daprd:1.0.0"
@@ -14,12 +14,12 @@ services:
       - facesapi
 
   ordersapi:
-    image: ${DOCKER_REGISTRY-}ordersapi
+    image: ordersapi
     build:
       context: .
-      dockerfile: OrdersAPI/Dockerfile
+      dockerfile: src/api/Ordering/OrdersAPI/Dockerfile
     depends_on:
-      - sqlService
+      - sqldata
       - rabbitmq
       - facesapi
 
@@ -29,50 +29,28 @@ services:
     depends_on:
       - ordersapi
 
-  faces.webmvc:
-    image: ${DOCKER_REGISTRY-}faceswebmvc
+  faceswebapp:
+    image: faceswebapp
     build:
       context: .
-      dockerfile: Faces.WebMVC/Dockerfile
+      dockerfile: src/app/FacesWebApp/Dockerfile
     depends_on:
       - rabbitmq
       - ordersapi
 
-  #faces.webmvc-dapr:
-  #  image: "daprio/daprd:1.0.0"
-  #  network_mode: "service:faces.webmvc"
-  #  depends_on:
-  #    - faces.webmvc
-
-  notificationservice:
-    image: ${DOCKER_REGISTRY-}notificationservice
+  notificationapi:
+    image: notificationapi
     build:
       context: .
-      dockerfile: NotificationService/Dockerfile
+      dockerfile: src/api/Notifications/NotificationAPI/Dockerfile
     depends_on:
       - rabbitmq
 
-  notificationservice-dapr:
+  notificationapi-dapr:
     image: "daprio/daprd:1.0.0"
-    network_mode: "service:notificationservice"
+    network_mode: "service:notificationapi"
     depends_on:
-      - notificationservice
-
-  sqlService:
-    image: mcr.microsoft.com/mssql/server:latest
-    container_name: sqlserver
-    environment:
-      SA_PASSWORD: "Passw0rd(!)"
-      ACCEPT_EULA: "Y"
-    ports:
-      - "1445:1433"
-
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmqFace
-    ports:
-      - "15672:15672"
-      - "5672:5672"
+      - notificationapi
 
   facesapigw:
     image: envoyproxy/envoy:v1.14.2
@@ -82,3 +60,25 @@ services:
     network_mode: "service:facesapigw"
     depends_on:
       - facesapigw
+
+  sqldata:
+    image: mcr.microsoft.com/mssql/server:latest
+    container_name: sqlserver
+    environment:
+      SA_PASSWORD: "Pass@word"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1445:1433"
+
+  redis:
+    image: redis:alpine
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmqFace
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+  dapr-placement:
+    image: "daprio/dapr:1.0.0"

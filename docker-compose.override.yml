@@ -20,12 +20,12 @@ services:
         "/components",
       ]
     volumes:
-      - "./dapr/Components/:/components"
+      - "./dapr/components/:/components"
 
   ordersapi:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - OrdersContext=Server=sqlService;Database=OrdersDb;User Id=sa;Password=Passw0rd(!)
+      - OrdersContext=Server=sqldata;Database=OrdersDb;User Id=sa;Password=Pass@word
       - FacesAPIUrl=http://facesapi
     ports:
       - "5000:80"
@@ -39,61 +39,44 @@ services:
         "ordersapi",
         "-app-port",
         "80",
+        "-placement-host-address",
+        "dapr-placement:50000",
         "-components-path",
         "/components",
       ]
     volumes:
-      - "./dapr/Components/:/components"
+      - "./dapr/components/:/components"
 
-  faces.webmvc:
+  faceswebapp:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - OrdersAPIUrl=http://facesapigw
     ports:
       - "7000:80"
 
-  # faces.webmvc-dapr:
-  #  command:
-  #    [
-  #      "./daprd",
-  #      "-app-id",
-  #      "faces.webmvc",
-  #      "-app-port",
-  #      "80",
-  #      "-components-path",
-  #      "/components",
-  #    ]
-  #  volumes:
-  #    - "./dapr/Components/:/components"
-
-  notificationservice:
+  notificationapi:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
 
-  notificationservice-dapr:
+  notificationapi-dapr:
     command:
       [
         "./daprd",
         "-app-id",
-        "notificationservice",
+        "notificationapi",
         "-app-port",
         "80",
+        "-placement-host-address",
+        "dapr-placement:50000",
         "-components-path",
         "/components",
       ]
     volumes:
-      - "./dapr/Components/:/components"
-
-  sqlService:
-    environment:
-      - SA_PASSWORD=Passw0rd(!)
-      - ACCEPT_EULA=Y
-    ports:
-      - "1445:1433"
+      - "./dapr/components/:/components"
 
   facesapigw:
     volumes:
-      - ./APIGateways/Envoy:/etc/envoy
+      - ./src/api/ApiGateways/Envoy:/etc/envoy
     ports:
       - "5202:80"
       - "15202:8001"
@@ -104,11 +87,28 @@ services:
       [
         "./daprd",
         "-app-id",
-        "webshoppingapigw",
+        "facesapigw",
         "-app-port",
         "80",
         "-components-path",
         "/components",
       ]
     volumes:
-      - "./dapr/Components/:/components"
+      - "./dapr/components/:/components"
+
+  sqldata:
+    environment:
+      - SA_PASSWORD=Pass@word
+      - ACCEPT_EULA=Y
+    ports:
+      - "1445:1433"
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "5379:6379"
+
+  dapr-placement:
+    command: ["./placement", "-port", "50000", "-log-level", "debug"]
+    ports:
+      - "50000:50000"

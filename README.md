@@ -1,4 +1,4 @@
-# Microservices-POC
+# Microservices-Dapr-NetCore
 
 This repo showcases microservices development using .Net Core and Dapr
 
@@ -15,6 +15,8 @@ Microservices With Dapr Flow Diagram:
 
 1. Service Invocation
 2. Pub Sub
+3. StateStore
+4. Actors
 
 # Dapr
 
@@ -23,9 +25,10 @@ Microservices With Dapr Flow Diagram:
 3. Orders API creates an Order by consuimg Faces API by using Dapr Service Invocation
 4. Orders API publishes Order Processed event to Dapr Pub/Sub side car
 5. Dapr registers the event, using **_pubsub.yaml_**, in RabbitMQ
-6. Customer Notification Service subscribes to Order Processed Event through Dapr Side Car
-7. Customer Notification Service publishes Order Dispatched Event through Dapr Side Car
+6. Notification API subscribes to Order Processed Event through Dapr Side Car
+7. Notification API publishes Order Dispatched Event through Dapr Side Car
 8. Orders API subscribes to Order Dispatched Event through Dapr Side Car
+9. Orders API and Notifcation API implements Order Status consistency check using Dapr StateStore via Actors.
 
 # Run the application
 
@@ -59,12 +62,16 @@ In self-hosted mode everything will run on your local machine. To prevent port-c
 | Sql Server    |   1445   |
 | Rabbit MQ     |   5672   |
 
-Before running the dapr commands, make sure to run Sql Server and RabbitMQ in Docker:
+Before running the dapr commands, make sure -
+
+1. run Sql Server and RabbitMQ in Docker:
+2. Dapr is installed and initialized (dapr init)
+3. Dapr placement container is running
 
 Run Sql Server -
 
 ```
-docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=Passw0rd(!)" --name sqlService -p 1445:1433 mcr.microsoft.com/mssql/server:latest
+docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=Pass@word" --name sqldata -p 1445:1433 mcr.microsoft.com/mssql/server:latest
 ```
 
 Run RabbitMQ -
@@ -78,7 +85,7 @@ Now, change the following files -
 1. Orders API -> appSettings.json -> OrdersContext
 
 ```
-"OrdersContext": "Server=localhost,1445;Database=OrdersDb;User Id=sa;password=Passw0rd(!)"
+"OrdersContext": "Server=localhost,1445;Database=OrdersDb;User Id=sa;password=Pass@word"
 ```
 
 2. dapr -> Components -> pubsub.yaml
@@ -91,13 +98,19 @@ Now, change the following files -
 Execute the following command (using the Dapr cli) to run the Orders API:
 
 ```
-dapr run --app-id ordersapi --app-port 5000 --components-path ../dapr/Components dotnet run
+dapr run --app-id ordersapi --app-port 5000 --placement-host-address localhost:50000 --components-path ../dapr/components dotnet run
+```
+
+Execute the following command (using the Dapr cli) to run the Notification API:
+
+```
+dapr run --app-id notificationapi --placement-host-address localhost:50000 --components-path ../dapr/components dotnet run
 ```
 
 Execute the following command (using the Dapr cli) to run the Faces API:
 
 ```
-dapr run --app-id facesapi --app-port 6000 --components-path ../dapr/Components dotnet run
+dapr run --app-id facesapi --app-port 6000 --components-path ../dapr/components dotnet run
 ```
 
 For Faces Web MVC, as it does not need dapr, simply run:

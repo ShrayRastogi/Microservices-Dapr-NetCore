@@ -3,7 +3,7 @@
   <PropertyGroup Label="Globals">
     <ProjectVersion>2.1</ProjectVersion>
     <DockerTargetOS>Linux</DockerTargetOS>
-    <ProjectGuid>69ef3c60-f282-494b-a536-24c488c2e8e7</ProjectGuid>
+    <ProjectGuid>35134d8e-1ebe-4f83-8ce8-0c1c8e82db15</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/swagger</DockerServiceUrl>
     <DockerServiceName>facesapi</DockerServiceName>
