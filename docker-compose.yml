@@ -19,7 +19,7 @@ services:
       context: .
       dockerfile: src/api/Ordering/OrdersAPI/Dockerfile
     depends_on:
-      - sqlService
+      - sqldata
       - rabbitmq
       - facesapi
 
@@ -61,11 +61,11 @@ services:
     depends_on:
       - facesapigw
 
-  sqlService:
+  sqldata:
     image: mcr.microsoft.com/mssql/server:latest
     container_name: sqlserver
     environment:
-      SA_PASSWORD: "Passw0rd(!)"
+      SA_PASSWORD: "Pass@word"
       ACCEPT_EULA: "Y"
     ports:
       - "1445:1433"
