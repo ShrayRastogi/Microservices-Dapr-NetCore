@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: envoy-cm
-  namespace: default
+  namespace: faces
 data:
   envoy.yaml: >
     admin:
@@ -44,14 +44,7 @@ data:
                     route:
                       auto_host_rewrite: true
                       prefix_rewrite: "/v1.0/invoke/ordersapi/method/"
-                      cluster: dapr
-                  - name: "facesapi"
-                    match:
-                      prefix: "/f/"
-                    route:
-                      auto_host_rewrite: true
-                      prefix_rewrite: "/v1.0/invoke/facesapi/method/"
-                      cluster: dapr
+                      cluster: dapr                  
               http_filters:
               - name: envoy.cors
               - name: envoy.router
@@ -87,28 +80,28 @@ data:
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: apigateway
-  namespace: default
+  name: facesapigw
+  namespace: faces
   labels:
-    app: faces
-    service: apigateway
+    app: facesapp
+    service: facesapigw
 spec:
   replicas: 1
   selector:
     matchLabels:
-      service: apigateway
+      service: facesapigw
   template:
     metadata:
       labels:
-        app: faces
-        service: apigateway
+        app: facesapp
+        service: facesapigw
       annotations:
         dapr.io/enabled: "true"
-        dapr.io/app-id: "apigateway"
+        dapr.io/app-id: "facesapigw"
         dapr.io/app-port: "80"
     spec:
       containers:
-      - name: apigateway
+      - name: facesapigw
         image: envoyproxy/envoy:v1.14.2
         imagePullPolicy: IfNotPresent
         ports:
@@ -137,11 +130,11 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: apigateway
-  namespace: default
+  name: facesapigw
+  namespace: faces
   labels:
-    app: faces
-    service: apigateway
+    app: facesapp
+    service: facesapigw
 spec:
   type: NodePort
   ports:
@@ -166,4 +159,4 @@ spec:
       protocol: TCP
       name: daprgrpc
   selector:
-    service: apigateway
+    service: facesapigw

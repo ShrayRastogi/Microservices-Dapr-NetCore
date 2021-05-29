@@ -1,39 +1,39 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: faceswebmvc-cm
-  namespace: default
+  name: faceswebapp-cm
+  namespace: faces
   labels:
-    app: faces
-    service: faceswebmvc
+    app: facesapp
+    service: faceswebapp
 data:
   ASPNETCORE_ENVIRONMENT: Development
-  OrdersAPIUrl: http://apigateway
+  OrdersAPIUrl: http://facesapigw
 
 ---
 
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: faceswebmvc
-  namespace: default
+  name: faceswebapp
+  namespace: faces
   labels:
-    app: faces
-    service: faceswebmvc
+    app: facesapp
+    service: faceswebapp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      service: faceswebmvc
+      service: faceswebapp
   template:
     metadata:
       labels:
-        app: faces
-        service: faceswebmvc
+        app: facesapp
+        service: faceswebapp
     spec:
       containers:
-        - name: faceswebmvc
-          image: faces.webmvc:latest
+        - name: faceswebapp
+          image: faceswebapp:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -41,18 +41,18 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: faceswebmvc-cm
+                name: faceswebapp-cm
 
 ---
 
 kind: Service
 apiVersion: v1
 metadata:
-  name: faceswebmvc-service
-  namespace: default
+  name: faceswebapp-service
+  namespace: faces
   labels:
-    app: faces
-    service: faceswebmvc
+    app: facesapp
+    service: faceswebapp
 spec:
   type: NodePort
   ports:
@@ -62,4 +62,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    service: faceswebmvc
+    service: faceswebapp

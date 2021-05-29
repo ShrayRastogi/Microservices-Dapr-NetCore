@@ -24,7 +24,7 @@ namespace NotificationAPI
             Host.CreateDefaultBuilder(args)
                 .ConfigureHostConfiguration(configHost => {
                     configHost.SetBasePath(Directory.GetCurrentDirectory());
-                    configHost.AddJsonFile($"appSettings.json", optional: false);
+                    configHost.AddJsonFile($"appSettings.json", optional: true);
                     configHost.AddEnvironmentVariables();
                     configHost.AddCommandLine(args);
                 })
@@ -40,6 +40,7 @@ namespace NotificationAPI
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                    // webBuilder.UseUrls("http://localhost:8000");
                 });
     }
 }

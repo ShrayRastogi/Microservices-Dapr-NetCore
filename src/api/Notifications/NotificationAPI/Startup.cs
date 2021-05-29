@@ -1,4 +1,6 @@
 ﻿using Dapr.Client;
+using EventBus;
+using EventBus.Abstractions;
 using Events;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -7,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NotificationAPI.EventHandling;
+using NotificationAPI.StateStore;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,8 +38,13 @@ namespace NotificationAPI
         /// <param name="services">Service Collection.</param>
         public void ConfigureServices(IServiceCollection services)
         {
-            // services.AddDaprClient();
+            services.AddDaprClient();
+            services.AddScoped<IEventBus, DaprEventBus>();
             services.AddTransient<OrderProcessedEventHandler>();
+            services.AddActors(options =>
+            {
+                options.Actors.RegisterActor<NotificationProcessActor>();
+            });
             services.AddSingleton(new JsonSerializerOptions()
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -57,6 +65,7 @@ namespace NotificationAPI
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapSubscribeHandler();
+                endpoints.MapActorsHandlers();
                 endpoints.MapPost("OrderProcessed", HandleOrderProcessedEvent).WithTopic("pubsub", "OrderProcessedIntegrationEvent");
             });
 

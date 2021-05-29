@@ -1,10 +1,13 @@
-﻿using Dapr.Client;
+﻿using Dapr.Actors;
+using Dapr.Actors.Client;
+using Dapr.Client;
 using EventBus.Abstractions;
 using Events;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OrdersAPI.Database.Models;
 using OrdersAPI.Database.Repositories;
+using OrdersAPI.StateStore;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -14,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace OrdersAPI.EventHandling
 {
-    public class RegisterOrderEventHandler: IIntegrationEventHandler<RegisterOrderIntegrationEvent>
+    public class RegisterOrderEventHandler : IIntegrationEventHandler<RegisterOrderIntegrationEvent>
     {
         readonly IOrderRepository _orderRepository;
         private readonly IHttpClientFactory _clientFactory;
@@ -33,7 +36,6 @@ namespace OrdersAPI.EventHandling
                 && result.UserEmail != null)
             {
                 SaveOrder(result);
-                // var client = _clientFactory.CreateClient();
                 var client = DaprClient.CreateInvokeHttpClient(appId: "facesapi");
                 Tuple<List<byte[]>, Guid> orderDetail = await GetFacesFromFacesAPIAsync(client, result.ImageData, result.OrderId);
                 List<byte[]> faces = orderDetail.Item1;
@@ -52,8 +54,6 @@ namespace OrdersAPI.EventHandling
 
         private async Task<Tuple<List<byte[]>, Guid>> GetFacesFromFacesAPIAsync(HttpClient client, byte[] imageData, Guid orderId)
         {
-            //var urlAddress = _orderSettings.Value.FacesAPIUrl + "/api/faces/?orderId=" + orderId;
-            //var uri = new Uri(urlAddress);
             var byteContent = new ByteArrayContent(imageData);
             byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
             using var res = await client.PostAsync("/api/faces?orderId=" + orderId, byteContent);
@@ -78,6 +78,7 @@ namespace OrdersAPI.EventHandling
                     order.OrderDetails.Add(orderDetail);
                 }
                 _orderRepository.UpdateOrder(order);
+                UpdateOrderStatusAsync(orderId, Status.Processed);
             }
         }
 
@@ -92,6 +93,25 @@ namespace OrdersAPI.EventHandling
                 Status = Status.Registered
             };
             _orderRepository.RegisterOrder(order);
+            UpdateOrderStatusAsync(result.OrderId, Status.Registered);
+        }
+
+        private static async void UpdateOrderStatusAsync(Guid orderId, Status status)
+        {
+            var orderingProcessActor = GetOrderingProcessActorAsync(orderId);
+
+            var orderStatus = new OrderStatus
+            {
+                OrderId = orderId,
+                Status = status.ToString()
+            };
+            await orderingProcessActor.UpdateOrderStatus(orderStatus);
+        }
+
+        private static IOrderingProcessActor GetOrderingProcessActorAsync(Guid orderId)
+        {
+            var actorId = new ActorId(orderId.ToString());
+            return ActorProxy.Create<IOrderingProcessActor>(actorId, nameof(OrderingProcessActor));
         }
     }
 }

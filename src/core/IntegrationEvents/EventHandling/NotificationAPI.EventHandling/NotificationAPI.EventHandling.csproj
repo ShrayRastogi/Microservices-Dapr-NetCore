@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\infrastructure\middleware\dapr\StateStore\NotificationAPI.StateStore\NotificationAPI.StateStore.csproj" />
     <ProjectReference Include="..\..\Events\Events.csproj" />
   </ItemGroup>
 
