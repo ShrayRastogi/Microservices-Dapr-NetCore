@@ -1,5 +1,5 @@
-﻿using Dapr.Actors;
-using Dapr.Actors.Client;
+﻿using Binding.Abstractions;
+using Binding.Messages;
 using Dapr.Client;
 using EventBus.Abstractions;
 using Events;
@@ -22,11 +22,15 @@ namespace OrdersAPI.EventHandling
         readonly IOrderRepository _orderRepository;
         private readonly IHttpClientFactory _clientFactory;
         private readonly IEventBus _eventBus;
-        public RegisterOrderEventHandler(IOrderRepository orderRepository, IHttpClientFactory clientFactory, IEventBus eventBus)
+        private readonly ICommonStateStore _stateStore;
+        private readonly IBinding _binding;
+        public RegisterOrderEventHandler(IOrderRepository orderRepository, IHttpClientFactory clientFactory, IEventBus eventBus, ICommonStateStore stateStore, IBinding binding)
         {
             _orderRepository = orderRepository;
             _clientFactory = clientFactory;
+            _stateStore = stateStore;
             _eventBus = eventBus;
+            _binding = binding;
         }
         public async Task Handle(RegisterOrderIntegrationEvent result)
         {
@@ -48,7 +52,9 @@ namespace OrdersAPI.EventHandling
                     UserEmail = result.UserEmail,
                     PictureUrl = result.PictureUrl
                 };
+                var bindingEvent = new BindingEvent();
                 await _eventBus.PublishAsync<OrderProcessedIntegrationEvent>(processedOrder);
+                await _binding.CreateBindingAsync<BindingEvent>(bindingEvent);
             }
         }
 
@@ -96,22 +102,36 @@ namespace OrdersAPI.EventHandling
             UpdateOrderStatusAsync(result.OrderId, Status.Registered);
         }
 
-        private static async void UpdateOrderStatusAsync(Guid orderId, Status status)
-        {
-            var commonActor = GetCommonActorAsync(orderId);
-
-            var orderStatus = new OrderStatus
+        private async void UpdateOrderStatusAsync(Guid orderId, Status status)
+        { 
+            var prevOrderStatus = await _stateStore.GetStateAsync<OrderStatus>(orderId.ToString());
+            bool shouldUpdateOrderStatus = (prevOrderStatus == null) || status.ToString() switch
             {
-                OrderId = orderId,
-                Status = status.ToString()
+                "Registered" => !prevOrderStatus.Status.Equals("Processed") &&
+                              !prevOrderStatus.Status.Equals("Sent"),
+                "Processed" => !prevOrderStatus.Status.Equals("Sent"),
+                "Sent" => !prevOrderStatus.Status.Equals("Sent"),
+                _ => false,
             };
-            await commonActor.UpdateOrderStatus(orderStatus);
-        }
-
-        private static ICommonActor GetCommonActorAsync(Guid orderId)
-        {
-            var actorId = new ActorId(orderId.ToString());
-            return ActorProxy.Create<ICommonActor>(actorId, nameof(CommonActor));
+            if (shouldUpdateOrderStatus)
+            {
+                if(prevOrderStatus == null)
+                {
+                    prevOrderStatus = new OrderStatus
+                    {
+                        OrderId = orderId,
+                        Status = status.ToString()
+                    };
+                } else
+                {
+                    prevOrderStatus.Status = status.ToString();
+                }          
+                await _stateStore.UpdateStateAsync(prevOrderStatus, orderId.ToString());
+            }
+            else
+            {
+                throw new Exception("Invalid Order Status");
+            }
         }
     }
 }

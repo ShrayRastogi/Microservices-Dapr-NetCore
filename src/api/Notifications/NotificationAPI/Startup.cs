@@ -1,4 +1,6 @@
-﻿using Dapr.Client;
+﻿using Binding;
+using Binding.Abstractions;
+using Dapr.Client;
 using EventBus;
 using EventBus.Abstractions;
 using Events;
@@ -40,11 +42,9 @@ namespace NotificationAPI
         {
             services.AddDaprClient();
             services.AddScoped<IEventBus, DaprEventBus>();
+            services.AddScoped<IBinding, DaprBinding>();
+            services.AddTransient<ICommonStateStore, CommonStateStore>();
             services.AddTransient<OrderProcessedEventHandler>();
-            services.AddActors(options =>
-            {
-                options.Actors.RegisterActor<CommonActor>();
-            });
             services.AddSingleton(new JsonSerializerOptions()
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -65,8 +65,11 @@ namespace NotificationAPI
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapSubscribeHandler();
-                endpoints.MapActorsHandlers();
                 endpoints.MapPost("OrderProcessed", HandleOrderProcessedEvent).WithTopic("pubsub", "OrderProcessedIntegrationEvent");
+                endpoints.MapPost("/notificationapi-binding", async context =>
+                {
+                    await context.Response.WriteAsync("Dapr Binding Subscribed");
+                });
             });
 
             async Task HandleOrderProcessedEvent(HttpContext context)

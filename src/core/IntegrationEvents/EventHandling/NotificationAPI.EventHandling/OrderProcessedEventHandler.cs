@@ -1,6 +1,4 @@
-﻿using Dapr.Actors;
-using Dapr.Actors.Client;
-using Dapr.Client;
+﻿using Binding.Abstractions;
 using EventBus.Abstractions;
 using Events;
 using SixLabors.ImageSharp;
@@ -19,13 +17,17 @@ namespace NotificationAPI.EventHandling
     public class OrderProcessedEventHandler
     {
         private readonly IEventBus _eventBus;
-        public OrderProcessedEventHandler(IEventBus eventBus)
+        private readonly ICommonStateStore _stateStore;
+        private readonly IBinding _binding;
+        public OrderProcessedEventHandler(IEventBus eventBus, ICommonStateStore stateStore, IBinding binding)
         {
             _eventBus = eventBus;
+            _stateStore = stateStore;
+            _binding = binding;
         }
         public async Task Handle(OrderProcessedIntegrationEvent result)
         {
-            var orderStatus = await GetCommonActorAsync(result.OrderId).GetOrderStatus();
+            var orderStatus = await _stateStore.GetStateAsync<OrderStatus>(result.OrderId.ToString());
             if (orderStatus != null && orderStatus.Status != "Processed")
             {
                 throw new Exception("Could not process order due to invalid status - " + orderStatus.Status);
@@ -49,19 +51,12 @@ namespace NotificationAPI.EventHandling
                     j++;
                 }
             }
-
             var dispatchedOrder = new OrderDispatchedIntegrationEvent
             {
                 DispachtedDateTime = DateTime.UtcNow,
                 OrderId = result.OrderId
             };
             await _eventBus.PublishAsync<OrderDispatchedIntegrationEvent>(dispatchedOrder);
-        }        
-
-        private static ICommonActor GetCommonActorAsync(Guid orderId)
-        {
-            var actorId = new ActorId(orderId.ToString());
-            return ActorProxy.Create<ICommonActor>(actorId, nameof(CommonActor));
         }
     }
 }
