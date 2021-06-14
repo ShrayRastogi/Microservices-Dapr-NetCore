@@ -48,7 +48,7 @@ namespace FacesAPI.Controllers
         [HttpPost("/facesapi-binding")]
         public IActionResult DaprBindingEvent(Object obj)
         {
-            // Handle tweet
+            // Handle input binding event
             Console.WriteLine("Dapr Binding Subscribed");
             
             return Ok();
