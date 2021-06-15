@@ -2,7 +2,7 @@
 
 namespace StateStore
 {
-    public class OrderStatus
+    public class OrderStatus: CommonState
     {
         public Guid OrderId { get; set; }
         public string Status { get; set; }

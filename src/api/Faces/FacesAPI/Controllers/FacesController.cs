@@ -44,5 +44,14 @@ namespace FacesAPI.Controllers
             //}
             return faceList;
         }
+
+        [HttpPost("/facesapi-binding")]
+        public IActionResult DaprBindingEvent(Object obj)
+        {
+            // Handle input binding event
+            Console.WriteLine("Dapr Binding Subscribed");
+            
+            return Ok();
+        }
     }
 }

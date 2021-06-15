@@ -1,0 +1,52 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+ name: facesapi-binding
+ namespace: default
+spec:
+ type: bindings.rabbitmq
+ version: v1
+ metadata:
+ - name: queueName
+   value: facesapi-binding-queue
+ - name: host
+   value: amqp://rabbitmq:5672
+ - name: durable
+   value: true
+ - name: deleteWhenUnused
+   value: false
+ - name: ttlInSeconds
+   value: 60
+ - name: prefetchCount
+   value: 0
+ - name: exclusive
+   value: false
+ - name: maxPriority
+   value: 5
+
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+ name: notificationapi-binding
+ namespace: default
+spec:
+ type: bindings.rabbitmq
+ version: v1
+ metadata:
+ - name: queueName
+   value: notificationapi-binding-queue
+ - name: host
+   value: amqp://rabbitmq:5672
+ - name: durable
+   value: true
+ - name: deleteWhenUnused
+   value: false
+ - name: ttlInSeconds
+   value: 60
+ - name: prefetchCount
+   value: 0
+ - name: exclusive
+   value: false
+ - name: maxPriority
+   value: 5

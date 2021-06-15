@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\infrastructure\middleware\dapr\Binding\Binding.csproj" />
     <ProjectReference Include="..\..\..\infrastructure\middleware\dapr\EventBus\EventBus.csproj" />
   </ItemGroup>
 

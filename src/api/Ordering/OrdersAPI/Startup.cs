@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Binding;
+using Binding.Abstractions;
 using EventBus;
 using EventBus.Abstractions;
 using Microsoft.AspNetCore.Builder;
@@ -48,9 +50,11 @@ namespace OrdersAPI
                 Configuration["OrdersContext"]));
             services.AddHttpClient();
             services.AddScoped<IEventBus, DaprEventBus>();
+            services.AddScoped<IBinding, DaprBinding>();
             services.AddTransient<RegisterOrderEventHandler>();
             services.AddTransient<OrderDispatchedEventHandler>();
             services.AddTransient<IOrderRepository, OrderRepository>();
+            services.AddTransient<ICommonStateStore, CommonStateStore>();
             services.AddControllers().AddDapr();
             services.AddActors(options =>
             {
