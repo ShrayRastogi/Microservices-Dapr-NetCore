@@ -17,6 +17,7 @@ Microservices With Dapr Flow Diagram:
 2. Pub Sub
 3. StateStore
 4. Actors
+5. Binding
 
 
 For more in-depth description of Dapr building blocks, please see my blog here -  https://link.medium.com/0C6G6U6eSgb
